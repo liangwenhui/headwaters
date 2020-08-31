@@ -59,7 +59,7 @@ public class HeadwatersImpl implements IDGenerator, NeadInit {
     /**
      * 最大步长
      */
-    private static final int MAX_STEP = 1000000;
+    private static final int MAX_STEP = 100_0000;
     /**
      * 一个BUCKET使用的持续时间，用于修改动态步长
      */
@@ -108,6 +108,7 @@ public class HeadwatersImpl implements IDGenerator, NeadInit {
          updateRegularly();
     }
     private void updateRegularly(){
+        //定时执行 完成后间隔一分钟执行
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor(new UpdateRegularlyTheadFactory());
         service.scheduleWithFixedDelay(()->{updateCache();},60,60,TimeUnit.SECONDS);
     }
@@ -251,6 +252,10 @@ public class HeadwatersImpl implements IDGenerator, NeadInit {
 
     }
 
+    /**
+     * 自旋等待
+     * @param bb
+     */
     private void  waitSomeTime(BucketBuffer bb){
         int times = 0;
         while (bb.getBackupThreadRunning().get())
