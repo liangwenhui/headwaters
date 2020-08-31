@@ -1,6 +1,9 @@
 package xyz.liangwh.headwaters;
 
 import org.junit.jupiter.api.Test;
+import org.openjdk.jol.info.ClassLayout;
+import xyz.liangwh.headwaters.core.disruptor.model.IdEvent;
+import xyz.liangwh.headwaters.core.model.Bucket;
 
 public class Tests {
 
@@ -19,6 +22,7 @@ public class Tests {
 
         System.out.println(i<<2);
         System.out.println(i);
-
+        IdEvent id = new IdEvent();
+        System.out.println(ClassLayout.parseInstance(id).toPrintable());
     }
 }

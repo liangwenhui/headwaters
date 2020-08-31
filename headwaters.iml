@@ -108,5 +108,7 @@
     <orderEntry type="library" name="Maven: org.springframework:spring-jcl:5.2.8.RELEASE" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.springframework:spring-test:5.2.8.RELEASE" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.xmlunit:xmlunit-core:2.7.0" level="project" />
+    <orderEntry type="library" name="Maven: org.openjdk.jol:jol-core:0.9" level="project" />
+    <orderEntry type="library" name="Maven: com.lmax:disruptor:3.4.2" level="project" />
   </component>
 </module>

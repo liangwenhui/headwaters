@@ -1,10 +1,13 @@
 package xyz.liangwh.headwaters.core.model;
 
 import lombok.Data;
+import sun.misc.Contended;
+import xyz.liangwh.headwaters.core.interfaces.IBucket;
 
 import java.util.concurrent.atomic.AtomicInteger;
 @Data
-public class Bucket {
+@Contended
+public class Bucket implements IBucket {
     private AtomicInteger value = new AtomicInteger(0);
     private long max = 0;
     private int inside = 0;
