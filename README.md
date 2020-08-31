@@ -21,6 +21,3 @@ Id生成器-水龙头
 
     
 
-- dev-disruptor [go](https://github.com/liangwenhui/headwaters/tree/dev-disruptor)
-
-  - 基于disruptor储存id，disruptor效率高，但消耗空间，空间换时间。
