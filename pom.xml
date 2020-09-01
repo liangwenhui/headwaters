@@ -19,6 +19,7 @@
         <mysql-connector-java.version>5.1.38</mysql-connector-java.version>
         <commons-io.version>2.4</commons-io.version>
         <mybatis-spring.version>1.2.5</mybatis-spring.version>
+        <spring-boot-dependencies.version>2.3.2.RELEASE</spring-boot-dependencies.version>
     </properties>
 
     <dependencies>
@@ -130,6 +131,10 @@
             <artifactId>mybatis-spring</artifactId>
             <version>2.0.3</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-freemarker</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -137,8 +142,38 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot-dependencies.version}</version>
+                <configuration>
+                    <mainClass>xyz.liangwh.headwaters.HeadwatersApplication</mainClass>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <excludeTransitive>false</excludeTransitive>
+                            <!-- 表示复制的jar文件去掉版本信息 -->
+                            <stripVersion>false</stripVersion>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
+
         <resources>
             <resource>
                 <targetPath>${project.build.directory}/classes</targetPath>

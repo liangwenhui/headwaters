@@ -1,4 +1,4 @@
-package xyz.liangwh.headwaters.core;
+package xyz.liangwh.headwaters.core.Impl;
 
 import com.mysql.jdbc.Buffer;
 import com.mysql.jdbc.TimeUtil;
@@ -8,11 +8,16 @@ import org.perf4j.slf4j.Slf4JStopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import xyz.liangwh.headwaters.core.AbstractHeadwaters;
 import xyz.liangwh.headwaters.core.dao.HwMarkDao;
+import xyz.liangwh.headwaters.core.interfaces.IBucket;
+import xyz.liangwh.headwaters.core.interfaces.IBuffer;
 import xyz.liangwh.headwaters.core.interfaces.IDGenerator;
+import xyz.liangwh.headwaters.core.interfaces.Monitor;
 import xyz.liangwh.headwaters.core.interfaces.NeadInit;
 import xyz.liangwh.headwaters.core.model.Bucket;
 import xyz.liangwh.headwaters.core.model.BucketBuffer;
+import xyz.liangwh.headwaters.core.model.BucketCacheView;
 import xyz.liangwh.headwaters.core.model.HeadwatersPo;
 import xyz.liangwh.headwaters.core.model.HwMarkSamplePo;
 import xyz.liangwh.headwaters.core.model.Result;
@@ -39,80 +44,19 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class HeadwatersImpl implements IDGenerator, NeadInit {
-    /**
-     * cache 未初始化完成标识
-     */
-    public static final int RESULT_OK = 200;
-    /**
-     * cache 未初始化完成标识
-     */
-    public static final int EXCEPTION_ID_CACHE_INIT_FALSE = -101;
-    /**
-     * key不存在标识
-     */
-    public static final int EXCEPTION_ID_KEY_NOT_EXISTS = 404;
-    /**
-     * 两个桶都为初始化完成
-     */
-    public static final  int EXCEPTION_ID_BOTH_BUCKET_NULL = -202;
-    /**
-     * 最大步长
-     */
-    private static final int MAX_STEP = 100_0000;
-    /**
-     * 一个BUCKET使用的持续时间，用于修改动态步长
-     */
-    private static final long BUCKET_DURATION = 10*50*1000L;
+public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer,Bucket> implements Monitor {
 
-    private volatile boolean initStatus = false;
-
-    private Map<String, BucketBuffer> cache = new ConcurrentHashMap<>();
     @Autowired
     private HwMarkDao hwMarkDao;
-
-    private ExecutorService service = new ThreadPoolExecutor(
-            5,
-            10,
-            120L,
-            TimeUnit.SECONDS,
-            new SynchronousQueue<Runnable>(),
-            new UpdateHeadwaterTheadFactory());
-
-    public static class UpdateHeadwaterTheadFactory implements ThreadFactory{
-        private static AtomicInteger times = new AtomicInteger();
-        @Override
-        public Thread newThread(Runnable r) {
-            return new Thread(r,"Thread-Update-Headwaters-Bucket-"+times.incrementAndGet());
-        }
-    }
-    public static class UpdateRegularlyTheadFactory implements ThreadFactory{
-
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread thread = new Thread(r, "Thread-Regularly-Update-Headwaters-Bucket");
-            thread.setDaemon(true);
-            return thread;
-        }
-    }
-
 
 
     @PostConstruct
     @Override
     public void init() {
-        log.info("init...");
-        updateCache();
-        this.initStatus = true;
-        //定时更新
-         updateRegularly();
+        super.init();
     }
-    private void updateRegularly(){
-        //定时执行 完成后间隔一分钟执行
-        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor(new UpdateRegularlyTheadFactory());
-        service.scheduleWithFixedDelay(()->{updateCache();},60,60,TimeUnit.SECONDS);
-    }
-    private void updateCache(){
+    @Override
+    public void updateCache(){
         log.info("update cache from db hw_mark");
         StopWatch stopWatch = new Slf4JStopWatch();
         try {
@@ -163,34 +107,13 @@ public class HeadwatersImpl implements IDGenerator, NeadInit {
     }
 
 
-    @Override
-    public Result getId(final String key) {
-        if(!this.initStatus){
-            return new Result(EXCEPTION_ID_CACHE_INIT_FALSE,null);
-        }
-        if(cache.containsKey(key)){
-            BucketBuffer bb = cache.get(key);
-            if(!bb.isInitStatus()){
-                synchronized (bb){
-                    if(!bb.isInitStatus()){
-                        try {
-                            updateBucket(key,bb.getCurrent());
-                            log.info("init BucketBuffer,update key {} {}",key,bb.getCurrent());
-                            bb.setInitStatus(true);
-                        }catch (Exception e){
-                            log.error("init BucketBuffer faild,key = {}",key,e);
-                        }
-                    }
-                }
-            }
-            return getIdFromBucketBuffer(key);
-        }else {
-            return new Result(EXCEPTION_ID_KEY_NOT_EXISTS,null);
-        }
-
+    public  long makeTrueId(int keyId,Object arg){
+        return IdUtils.makeTrueId(keyId,(Integer) arg);
     }
 
-    private Result getIdFromBucketBuffer(final String key){
+
+
+    public Result getIdFromBucketBuffer(final String key){
         Result res = null;
         final BucketBuffer bb = cache.get(key);
         while(true){
@@ -256,7 +179,7 @@ public class HeadwatersImpl implements IDGenerator, NeadInit {
      * 自旋等待
      * @param bb
      */
-    private void  waitSomeTime(BucketBuffer bb){
+    public void  waitSomeTime(BucketBuffer bb){
         int times = 0;
         while (bb.getBackupThreadRunning().get())
         {
@@ -281,10 +204,10 @@ public class HeadwatersImpl implements IDGenerator, NeadInit {
         }
     }
 
-    private void updateBucket (final String key,Bucket bucket) throws Exception{
+    public void updateBucket (final String key,Bucket bucket) throws Exception{
         StopWatch stopWatch = new Slf4JStopWatch();
         try {
-            BucketBuffer bb = bucket.getParent();
+            BucketBuffer bb = (BucketBuffer)bucket.getParent();
             HeadwatersPo po;
             if(!bb.isInitStatus()){
                 po = hwMarkDao.updateAndGetHeadwaters(key);
@@ -320,5 +243,35 @@ public class HeadwatersImpl implements IDGenerator, NeadInit {
         }finally {
             stopWatch.stop("updateBucket");
         }
+    }
+
+    @Override
+    public Map getInfo() {
+        Map res = new HashMap();
+        if(cache==null||cache.size()==0){
+            return null;
+        }
+        Set<String> keySet = cache.keySet();
+        for(String key : keySet){
+            BucketCacheView view = new BucketCacheView();
+            view.setKey(key);
+            BucketBuffer bucketBuffer = cache.get(key);
+            view.setId(bucketBuffer.getId());
+            view.setStep(bucketBuffer.getStep());
+            view.setAutoStep(bucketBuffer.getAutoStep());
+            view.setCurrentBucketIndex(bucketBuffer.getCurrentBucket());
+            view.setNextReady(bucketBuffer.isNextReady());
+            view.setBackupThreadRunning(bucketBuffer.getBackupThreadRunning().get());
+            view.setInitStatus(bucketBuffer.isInitStatus());
+            Bucket current = bucketBuffer.getCurrent();
+            view.setIdle(current.getIdle());
+
+            view.setCurrentValue(makeTrueId(view.getId(),current.getValue().get()));
+            view.setCurrentInsideValue(current.getValue().get());
+            view.setMax(current.getMax());
+           view.setInside(current.getInside());
+            res.put(key,view);
+        }
+        return res;
     }
 }

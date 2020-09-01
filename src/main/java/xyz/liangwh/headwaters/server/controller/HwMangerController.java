@@ -1,23 +1,27 @@
 package xyz.liangwh.headwaters.server.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import xyz.liangwh.headwaters.core.dao.HwMarkDao;
+import xyz.liangwh.headwaters.core.interfaces.Monitor;
+
+import java.util.Map;
 
 
-
-@RestController
+@Controller
+@RequestMapping("manger")
 public class HwMangerController {
 
     @Autowired
-    HwMarkDao hwMarkDao;
-    @RequestMapping("test")
-    @Transactional()
-    public Object test(){
-        return hwMarkDao.getAllHeadwaters();
+    Monitor headwaters;
+
+    @RequestMapping(value = "cache")
+    public String cache(Model model){
+        Map map = headwaters.getInfo();
+        System.out.println(map);
+        model.addAttribute("data",map);
+        return "headwaters";
     }
 
 
