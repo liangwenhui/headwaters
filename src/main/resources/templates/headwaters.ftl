@@ -1,8 +1,8 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>ID监控页面</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link href="/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
@@ -29,7 +29,6 @@
     <#if data?exists>
         <#list data?keys as key>
         <tr>
-
             <td>${key}</td>
             <td>${data[key].id}</td>
             <td>${data[key].step}</td>

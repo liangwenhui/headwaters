@@ -16,8 +16,6 @@ public class Bucket extends IBucket<Integer> {
         return this.inside - value.get();
     }
 
-
-
     @Override
     public IBuffer getPar() {
         return parent;

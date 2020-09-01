@@ -11,9 +11,11 @@ public abstract class IBucket<T> {
     //可指向buffer
     protected IBuffer parent;
 
+    /**
+     * 获取id余量
+     * @return
+     */
     public abstract int getIdle();
-
-
 
     public abstract IBuffer getPar();
 

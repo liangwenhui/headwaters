@@ -175,34 +175,7 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer,Bucket> impl
 
     }
 
-    /**
-     * 自旋等待
-     * @param bb
-     */
-    public void  waitSomeTime(BucketBuffer bb){
-        int times = 0;
-        while (bb.getBackupThreadRunning().get())
-        {
-            times++;
-            if(times<3000){
-                try {
-                    TimeUnit.MILLISECONDS.sleep(10);
-                } catch (InterruptedException e) {
-                    log.warn("Thread {} Interrupted",Thread.currentThread().getName());
-                    break;
-                }
-            }else if(times<10000){
-                try {
-                    TimeUnit.MILLISECONDS.sleep(20);
-                } catch (InterruptedException e) {
-                    log.warn("Thread {} Interrupted",Thread.currentThread().getName());
-                    break;
-                }
-            }else{
-                break;
-            }
-        }
-    }
+
 
     public void updateBucket (final String key,Bucket bucket) throws Exception{
         StopWatch stopWatch = new Slf4JStopWatch();
