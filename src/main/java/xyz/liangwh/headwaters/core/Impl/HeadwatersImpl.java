@@ -1,7 +1,5 @@
 package xyz.liangwh.headwaters.core.Impl;
 
-import com.mysql.jdbc.Buffer;
-import com.mysql.jdbc.TimeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.perf4j.StopWatch;
 import org.perf4j.slf4j.Slf4JStopWatch;
@@ -9,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import xyz.liangwh.headwaters.core.AbstractHeadwaters;
-import xyz.liangwh.headwaters.core.dao.HwMarkDao;
+import xyz.liangwh.headwaters.core.dao.HwMarkRedisDao;
 import xyz.liangwh.headwaters.core.interfaces.IBucket;
 import xyz.liangwh.headwaters.core.interfaces.IBuffer;
 import xyz.liangwh.headwaters.core.interfaces.IDGenerator;
@@ -30,16 +28,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Lock;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,7 +35,7 @@ import java.util.stream.Collectors;
 public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer,Bucket> implements Monitor {
 
     @Autowired
-    private HwMarkDao hwMarkDao;
+    private HwMarkRedisDao hwMarkDao;
 
 
     @PostConstruct
@@ -68,9 +56,9 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer,Bucket> impl
             List<String> cacheKeys = new ArrayList<>(cache.keySet());
             Set<String> addSet = dbHws.stream().map(HwMarkSamplePo::getKey).collect(Collectors.toSet());
             Set<String> removeSet = new HashSet<>(cache.keySet());
-            Map<String,Integer> keyIdMap = new HashMap<>();
+            Map<String,String> keyIdMap = new HashMap<>();
             dbHws.stream().forEach(o->{
-                keyIdMap.put(o.getKey(),o.getId());
+                keyIdMap.put(o.getKey(),o.getGid());
             });
 
             String tmp ;
@@ -82,7 +70,7 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer,Bucket> impl
             }
             for (String key:addSet){
                 BucketBuffer buffer = new BucketBuffer();
-                buffer.setId(keyIdMap.get(key));
+                buffer.setGid(keyIdMap.get(key));
                 buffer.setKey(key);
                 cache.put(key, buffer);
                 log.info("[updateCache] add buckerbuffer {}",buffer);
@@ -145,7 +133,7 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer,Bucket> impl
                         }
                     });
                 }
-                long value = IdUtils.makeTrueId(bb.getId(),bucket.getValue().getAndIncrement());
+                long value = IdUtils.makeTrueId(0,bucket.getValue().getAndIncrement());
                 if(value< bucket.getMax()){
                     return  new Result(RESULT_OK, value);
                 }
@@ -157,7 +145,7 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer,Bucket> impl
             bb.getLock().writeLock().lock();
             try {
                 final Bucket bucket = bb.getCurrent();
-                long value = IdUtils.makeTrueId(bb.getId(),bucket.getValue().getAndIncrement());
+                long value = IdUtils.makeTrueId(0,bucket.getValue().getAndIncrement());
                 if(value< bucket.getMax()){
                     return  new Result(RESULT_OK, value);
                 }
@@ -179,8 +167,9 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer,Bucket> impl
 
     public void updateBucket (final String key,Bucket bucket) throws Exception{
         StopWatch stopWatch = new Slf4JStopWatch();
+        BucketBuffer bb = (BucketBuffer)bucket.getParent();
+        bb.getLock().writeLock().lock();
         try {
-            BucketBuffer bb = (BucketBuffer)bucket.getParent();
             HeadwatersPo po;
             if(!bb.isInitStatus()){
                 po = hwMarkDao.updateAndGetHeadwaters(key);
@@ -202,18 +191,20 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer,Bucket> impl
                 log.info("key[{}],step[{}],autoStep[{}],duration[{}ms]",key,bb.getStep(),autoStep,duration);
                 bb.setAutoStep(autoStep);
                 po = hwMarkDao.updateAutoAndGetHeadwaters(key, autoStep);
+                //po = hwMarkDao.updateAndGetHeadwaters(key);
                 bb.setUpdateTs(System.currentTimeMillis());
                 bb.setStep(po.getStep());
-                bb.setId(po.getId());
             }
             int value = po.getInsideId() - bb.getAutoStep()+1;
             bucket.getValue().set(value);
             bucket.setInside(po.getInsideId());
-            bucket.setMax(IdUtils.makeTrueId(po.getId(),bucket.getInside()));
+            bucket.setMax(IdUtils.makeTrueId(0,bucket.getInside()));
             bucket.setStep(bb.getAutoStep());
+
         }catch (Exception e){
             throw  e;
         }finally {
+            bb.getLock().writeLock().unlock();
             stopWatch.stop("updateBucket");
         }
     }
@@ -229,7 +220,7 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer,Bucket> impl
             BucketCacheView view = new BucketCacheView();
             view.setKey(key);
             BucketBuffer bucketBuffer = cache.get(key);
-            view.setId(bucketBuffer.getId());
+            view.setGid(bucketBuffer.getGid());
             view.setStep(bucketBuffer.getStep());
             view.setAutoStep(bucketBuffer.getAutoStep());
             view.setCurrentBucketIndex(bucketBuffer.getCurrentBucket());
@@ -239,7 +230,7 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer,Bucket> impl
             Bucket current = bucketBuffer.getCurrent();
             view.setIdle(current.getIdle());
 
-            view.setCurrentValue(makeTrueId(view.getId(),current.getValue().get()));
+            view.setCurrentValue(makeTrueId(0,current.getValue().get()));
             view.setCurrentInsideValue(current.getValue().get());
             view.setMax(current.getMax());
            view.setInside(current.getInside());
@@ -247,4 +238,11 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer,Bucket> impl
         }
         return res;
     }
+    @Override
+    protected Result nullStrategy(String key){
+        hwMarkDao.updateAndGetHeadwaters(key);
+        updateCache();
+        return super.getId(key);
+    }
+
 }

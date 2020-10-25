@@ -3,45 +3,59 @@ package xyz.liangwh.headwaters;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import xyz.liangwh.headwaters.core.dao.HwMarkDao;
 import xyz.liangwh.headwaters.core.model.HeadwatersPo;
 import xyz.liangwh.headwaters.core.model.HwMarkSamplePo;
+import xyz.liangwh.headwaters.core.model.Result;
+import xyz.liangwh.headwaters.core.utils.RedisUtil;
+import xyz.liangwh.headwaters.server.controller.HwIDGenController;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @SpringBootTest
 public class HwMarkDapApplicationTest {
+@Autowired
+private RedisUtil redisUtil;
+
+@Test
+public void test1(){
+    String tb = "gid";
+
+    redisUtil.hincr(tb,"a",1000);
+    redisUtil.hincr(tb,"b",1000);
+    Integer a = (Integer)redisUtil.hget(tb, "a");
+    System.out.println(a.intValue());
+}
+
+    @Test
+    public void test2(){
+        String tb = "gid";
+
+        Map<Object, Object> hmget = redisUtil.hmget(tb);
+        System.out.println(hmget.keySet());
+
+    }
 
     @Autowired
-    HwMarkDao hwMarkDao;
+    private HwIDGenController gen;
 
     @Test
-    void testGetAllMark(){
-        List<HeadwatersPo> allHeadwaters = hwMarkDao.getAllHeadwaters();
-        System.out.println(allHeadwaters);
+    public void test3() throws InterruptedException {
+
+
+        for(int i=0;i<1;i++){
+            new Thread(()->{
+                Result test ;
+                for(int j=0;j<10000;j++){
+                     test = gen.getId("test");
+                    System.out.println(Thread.currentThread().getName()+":"+test.getId());
+                }
+
+            },"T"+i).start();
+        }
+        TimeUnit.SECONDS.sleep(10);
+
     }
-    @Test
-    void testUpdateAndGet(){
-        String key = "one";
-        HeadwatersPo po = hwMarkDao.updateAndGetHeadwaters(key);
-        System.out.println(po);
-    }
-
-    @Test
-    void testUpdateAndGet2(){
-        String key = "one";
-        int step = 2000;
-        HeadwatersPo po = hwMarkDao.updateAutoAndGetHeadwaters(key,step);
-        System.out.println(po);
-    }
-
-    @Test
-    void testGetSamples(){
-        List<HwMarkSamplePo> allKeyMap = hwMarkDao.getAllKeyMap();
-        System.out.println(allKeyMap);
-    }
-
-
-
 
 }

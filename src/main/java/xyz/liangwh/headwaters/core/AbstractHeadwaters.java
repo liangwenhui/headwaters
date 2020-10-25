@@ -1,29 +1,12 @@
 package xyz.liangwh.headwaters.core;
 
 import lombok.extern.slf4j.Slf4j;
-import org.perf4j.StopWatch;
-import org.perf4j.slf4j.Slf4JStopWatch;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import xyz.liangwh.headwaters.core.dao.HwMarkDao;
 import xyz.liangwh.headwaters.core.interfaces.IBucket;
 import xyz.liangwh.headwaters.core.interfaces.IBuffer;
 import xyz.liangwh.headwaters.core.interfaces.IDGenerator;
 import xyz.liangwh.headwaters.core.interfaces.NeadInit;
-import xyz.liangwh.headwaters.core.model.Bucket;
-import xyz.liangwh.headwaters.core.model.BucketBuffer;
-import xyz.liangwh.headwaters.core.model.HeadwatersPo;
-import xyz.liangwh.headwaters.core.model.HwMarkSamplePo;
 import xyz.liangwh.headwaters.core.model.Result;
-import xyz.liangwh.headwaters.core.utils.IdUtils;
-
-import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,9 +16,19 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
-
+/**
+ * 抽象的Headwaters序列容器，实现了IDGenerator，NeadInit接口
+ * 定义了返回状态码，应用最大步长，动态步长计算阈值
+ * 注册的IBuffer是否可用等熟悉
+ * 定义了容器初始化标准流程
+ * 定义了获取序列的标准流程
+ * 子类需要实现抽象容器的钩子函数
+ * @see  IDGenerator
+ * @see NeadInit
+ * @param <T>
+ * @param <Y>
+ */
 @Slf4j
 public abstract class AbstractHeadwaters<T extends IBuffer,Y extends IBucket> implements IDGenerator, NeadInit {
     /**
@@ -147,9 +140,13 @@ public abstract class AbstractHeadwaters<T extends IBuffer,Y extends IBucket> im
             }
             return getIdFromBucketBuffer(key);
         }else {
-            return new Result(EXCEPTION_ID_KEY_NOT_EXISTS,null);
+            return nullStrategy(key);
         }
 
+    }
+
+    protected Result nullStrategy(String key){
+        return new Result(EXCEPTION_ID_KEY_NOT_EXISTS,null);
     }
 
     /**

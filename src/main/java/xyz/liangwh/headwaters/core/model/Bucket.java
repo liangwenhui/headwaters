@@ -5,6 +5,13 @@ import xyz.liangwh.headwaters.core.interfaces.IBucket;
 import xyz.liangwh.headwaters.core.interfaces.IBuffer;
 
 import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * IBucket实现类
+ *
+ * @see IBucket
+ * @author liangwh
+ */
 @Data
 public class Bucket extends IBucket<Integer> {
     private AtomicInteger value = new AtomicInteger(0);

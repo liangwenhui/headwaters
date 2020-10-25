@@ -2,6 +2,12 @@ package xyz.liangwh.headwaters.core.interfaces;
 
 import lombok.Data;
 
+/**
+ * 一个桶（Bucket）的顶级接口，Bucket用来存放运行期的序列值
+ * 以及步长等信息，由parent IBuffer管理
+ * @see IBuffer
+ * @param <T>
+ */
 @Data
 public abstract class IBucket<T> {
 

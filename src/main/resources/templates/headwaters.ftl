@@ -30,7 +30,7 @@
         <#list data?keys as key>
         <tr>
             <td>${key}</td>
-            <td>${data[key].id}</td>
+            <td>${data[key].gid}</td>
             <td>${data[key].step}</td>
             <td>${data[key].autoStep}</td>
             <td>${data[key].currentBucketIndex}</td>

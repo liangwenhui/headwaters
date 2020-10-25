@@ -8,6 +8,10 @@ import org.springframework.web.bind.annotation.RestController;
 import xyz.liangwh.headwaters.core.interfaces.IDGenerator;
 import xyz.liangwh.headwaters.core.model.Result;
 
+/**
+ * 序列Controller
+ * 对外开放 获取序列号接口
+ */
 @RestController
 @RequestMapping()
 public class HwIDGenController {

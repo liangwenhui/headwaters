@@ -8,7 +8,9 @@ import xyz.liangwh.headwaters.core.interfaces.Monitor;
 
 import java.util.Map;
 
-
+/**
+ * 序列容器状态Controller
+ */
 @Controller
 @RequestMapping("manger")
 public class HwMangerController {

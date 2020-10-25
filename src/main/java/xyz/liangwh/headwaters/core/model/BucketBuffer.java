@@ -1,13 +1,16 @@
 package xyz.liangwh.headwaters.core.model;
 
 import lombok.Data;
-import lombok.ToString;
-import xyz.liangwh.headwaters.core.interfaces.IBucket;
 import xyz.liangwh.headwaters.core.interfaces.IBuffer;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+/**
+ * IBuffer实现类，双重缓存Buckets
+ * 通过取模方式，循环更新使用Bucket
+ *
+ * @see Bucket
+ * @see IBuffer
+ * @author liangwh
+ */
 @Data
 public class BucketBuffer extends IBuffer<Bucket> {
 
@@ -20,14 +23,28 @@ public class BucketBuffer extends IBuffer<Bucket> {
         buckets[0] = b1;
         buckets[1] = b2;
     }
+
+    /**
+     * 获取当前值班的bucket
+     * @return
+     */
     @Override
     public Bucket getCurrent(){
         return buckets[currentBucket];
     }
+
+    /**
+     * 获取下任bucket的下标，通过取模的方式获取
+     * @return
+     */
     @Override
     public int getNextIndex(){
         return (currentBucket+1) % 2;
     }
+
+    /**
+     * 切换值班bucket
+     */
     @Override
     public void checkoutCurrent(){
         currentBucket = getNextIndex();
@@ -37,7 +54,7 @@ public class BucketBuffer extends IBuffer<Bucket> {
     public String toString(){
         StringBuffer sb = new StringBuffer();
         sb.append("{");
-        sb.append("").append(this.id);
+        sb.append("").append(this.gid);
         sb.append("").append(this.initStatus);
         sb.append("").append(this.updateTs);
         sb.append("").append(this.key);

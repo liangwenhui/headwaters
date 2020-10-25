@@ -1,30 +1,22 @@
 package xyz.liangwh.headwaters.core.model;
 
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.activerecord.Model;
 import lombok.Data;
-import org.springframework.cglib.core.HashCodeCustomizer;
 
-import java.util.Date;
+/**
+ * Headwaters 序列对象实体类
+ */
 @Data
-@TableName("hw_mark")
-public class HeadwatersPo extends Model<HeadwatersPo> {
-
-    @TableField
-    private Integer id;
-    @TableField(value = "busi_key")
+public class HeadwatersPo  {
+    //域
+    private String gid;
+    //序列名
     private String key;
-    @TableField(value = "inside_id")
+    //当前从redis更新的序列值
     private Integer insideId;
-    @TableField(value = "max_id")
+    //当前序列可达最大值，接近改值表示要进行下一次更新内存中序列
     private Long maxId;
-    @TableField
+    //序列递增步长
     private Integer step;
-    @TableField
-    private String desc;
-    @TableField(value = "update_time")
-    private Date updateTime;
 
 
 }
