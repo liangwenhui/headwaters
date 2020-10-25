@@ -40,22 +40,22 @@ public void test1(){
     @Autowired
     private HwIDGenController gen;
 
-    @Test
-    public void test3() throws InterruptedException {
-
-
-        for(int i=0;i<1;i++){
-            new Thread(()->{
-                Result test ;
-                for(int j=0;j<10000;j++){
-                     test = gen.getId("test");
-                    System.out.println(Thread.currentThread().getName()+":"+test.getId());
-                }
-
-            },"T"+i).start();
-        }
-        TimeUnit.SECONDS.sleep(10);
-
-    }
+//    @Test
+//    public void test3() throws InterruptedException {
+//
+//
+//        for(int i=0;i<1;i++){
+//            new Thread(()->{
+//                Result test ;
+//                for(int j=0;j<10000;j++){
+//                     //test = gen.getId("test");
+//                    System.out.println(Thread.currentThread().getName()+":"+test.getId());
+//                }
+//
+//            },"T"+i).start();
+//        }
+//        TimeUnit.SECONDS.sleep(10);
+//
+//    }
 
 }

@@ -31,3 +31,7 @@ spring:
 gid:
   key: gid
   step: 1000
+
+netty:
+  port: 8080
+  url: localhost
