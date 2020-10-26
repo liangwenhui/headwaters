@@ -5,7 +5,10 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 
 import org.apache.commons.lang.StringUtils;
 import xyz.liangwh.headwaters.core.interfaces.IDGenerator;
+import xyz.liangwh.headwaters.core.model.RESPResult;
+import xyz.liangwh.headwaters.core.model.RESPSysResult;
 import xyz.liangwh.headwaters.core.model.Result;
+import xyz.liangwh.headwaters.core.utils.RESPUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,48 +27,40 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
     }
 
 
-    public static void main(String[] args) {
-        String command = "sequence     test   \n";
-        String[] commands = command.split(" ");
-        List<String> cs = new ArrayList<>();
-        String tmp ;
-        if(commands.length>1){
-            for(String arg:commands){
-                tmp = arg.trim();
-                if(StringUtils.isNotEmpty(tmp)){
-                    cs.add(tmp);
-                }
-            }
-        }
-        System.out.println(cs);
-    }
-//    private List<String> parse(String command){
-//        command = "sequence   test     \n";
-//
-//    }
+
 
     @Override//sequence test\n
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-//        System.out.println("------->server channel read");
         if(msg!=null){
-            if(StringUtils.startsWith((String) msg,"sequence")){
-                Result test = idGenerator.getId("test");
-                StringBuffer id = new StringBuffer();
-                id.append(test.getId());
-                ctx.write("$"+id.toString().length());
-                //ctx.write(id.toString().length());
-                ctx.write("\n");
-                ctx.write(id.toString());
-                ctx.write("\n");
-            }else{
-                ctx.write("-Error headwaters only suport command [sequence]\n");
+            RESPResult respResult = RESPUtil.TranslateToRESPResult((String) msg);
+            List<String> argList = respResult.getArgList();
+            String command = argList.get(0);
+            boolean contains = RESPUtil.COMMANDS_SET.contains(command);
+            if(contains){
+                if(!command.equals("PING")){
+                    if(argList.size()>1){
+                        String key = argList.get(1);
+                        Result id = idGenerator.getId(key);
+                        respResult = new RESPResult();
+                        ctx.write(RESPUtil.TranslateToRESPString(respResult.append(id.getId()+""),true));
+
+                    }else{
+                        ctx.write(RESPUtil.makeSystemResult(RESPSysResult.ERROR, "The format of command 'sequence' must be sequence key !"));
+                    }
+                }else{
+                    ctx.write(RESPUtil.FLAG_SUCCESS+"PONG");
+                    ctx.write(RESPUtil.CRLF);
+                }
+            }else {
+                ctx.write(RESPUtil.makeSystemResult(RESPSysResult.ERROR, "Only command 'PING','sequence'is supported !"));
             }
+            //刷新缓存区
+            ctx.flush();
         }
         //System.out.println(ctx.channel().remoteAddress()+"----->Server :"+ msg.toString());
         //将客户端的信息直接返回写入ctx
 
-        //刷新缓存区
-        ctx.flush();
+
     }
 
 

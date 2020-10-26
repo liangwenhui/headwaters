@@ -20,7 +20,7 @@ public class NettyServer {
 
     public void start(InetSocketAddress address){
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
+        EventLoopGroup workerGroup = new NioEventLoopGroup(6);
         try {
             ServerBootstrap bootstrap = new ServerBootstrap()
                     .group(bossGroup, workerGroup)
