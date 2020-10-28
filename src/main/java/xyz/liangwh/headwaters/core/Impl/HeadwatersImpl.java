@@ -45,7 +45,7 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer,Bucket> impl
     }
     @Override
     public void updateCache(){
-        log.info("update cache from db hw_mark");
+        log.info("update cache from redis");
         StopWatch stopWatch = new Slf4JStopWatch();
         try {
             List<HwMarkSamplePo> dbHws = hwMarkDao.getAllKeyMap();
@@ -87,7 +87,7 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer,Bucket> impl
 
             }
         }catch (Exception e){
-            log.error("update cache from db hw_mark faild!",e);
+            log.error("update cache from redis  faild!",e);
         }finally {
             stopWatch.stop("updateCache");
         }
@@ -95,9 +95,9 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer,Bucket> impl
     }
 
 
-    public  long makeTrueId(int keyId,Object arg){
-        return IdUtils.makeTrueId(keyId,(Integer) arg);
-    }
+//    public  long makeTrueId(int keyId,Object arg){
+//        return IdUtils.makeTrueId(keyId,(Integer) arg);
+//    }
 
 
 
@@ -133,7 +133,8 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer,Bucket> impl
                         }
                     });
                 }
-                long value = IdUtils.makeTrueId(0,bucket.getValue().getAndIncrement());
+                //long value = IdUtils.makeTrueId(0,bucket.getValue().getAndIncrement());
+                long value = bucket.getValue().getAndIncrement();
                 if(value< bucket.getMax()){
                     return  new Result(RESULT_OK, value);
                 }
@@ -145,7 +146,8 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer,Bucket> impl
             bb.getLock().writeLock().lock();
             try {
                 final Bucket bucket = bb.getCurrent();
-                long value = IdUtils.makeTrueId(0,bucket.getValue().getAndIncrement());
+                //long value = IdUtils.makeTrueId(0,bucket.getValue().getAndIncrement());
+                long value = bucket.getValue().getAndIncrement();
                 if(value< bucket.getMax()){
                     return  new Result(RESULT_OK, value);
                 }
@@ -198,7 +200,8 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer,Bucket> impl
             int value = po.getInsideId() - bb.getAutoStep()+1;
             bucket.getValue().set(value);
             bucket.setInside(po.getInsideId());
-            bucket.setMax(IdUtils.makeTrueId(0,bucket.getInside()));
+            bucket.setMax(bucket.getInside());
+           // bucket.setMax(IdUtils.makeTrueId(0,bucket.getInside()));
             bucket.setStep(bb.getAutoStep());
 
         }catch (Exception e){
@@ -230,7 +233,8 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer,Bucket> impl
             Bucket current = bucketBuffer.getCurrent();
             view.setIdle(current.getIdle());
 
-            view.setCurrentValue(makeTrueId(0,current.getValue().get()));
+            //view.setCurrentValue(makeTrueId(0,current.getValue().get()));
+            view.setCurrentValue(current.getValue().get());
             view.setCurrentInsideValue(current.getValue().get());
             view.setMax(current.getMax());
            view.setInside(current.getInside());

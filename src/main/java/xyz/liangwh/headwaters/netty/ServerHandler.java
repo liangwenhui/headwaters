@@ -3,7 +3,9 @@ package xyz.liangwh.headwaters.netty;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
 import xyz.liangwh.headwaters.core.interfaces.IDGenerator;
 import xyz.liangwh.headwaters.core.model.RESPResult;
 import xyz.liangwh.headwaters.core.model.RESPSysResult;
@@ -12,8 +14,9 @@ import xyz.liangwh.headwaters.core.utils.RESPUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-
+@Slf4j
 public class ServerHandler extends ChannelInboundHandlerAdapter {
+
 
     private IDGenerator idGenerator;
 
@@ -43,7 +46,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
                         Result id = idGenerator.getId(key);
                         respResult = new RESPResult();
                         ctx.write(RESPUtil.TranslateToRESPString(respResult.append(id.getId()+""),true));
-
+                        //log.info(id.getId()+"");
                     }else{
                         ctx.write(RESPUtil.makeSystemResult(RESPSysResult.ERROR, "The format of command 'sequence' must be sequence key !"));
                     }

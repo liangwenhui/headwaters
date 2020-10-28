@@ -83,6 +83,7 @@
 
     <root level="info">
         <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="INFO_FILE"/>
     </root>
 
     <!--生产环境:输出到文件-->

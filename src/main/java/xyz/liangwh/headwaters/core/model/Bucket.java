@@ -5,6 +5,7 @@ import xyz.liangwh.headwaters.core.interfaces.IBucket;
 import xyz.liangwh.headwaters.core.interfaces.IBuffer;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * IBucket实现类
@@ -13,13 +14,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author liangwh
  */
 @Data
-public class Bucket extends IBucket<Integer> {
-    private AtomicInteger value = new AtomicInteger(0);
+public class Bucket extends IBucket<Long> {
+    //private AtomicInteger value = new AtomicInteger(0);
+    private AtomicLong value = new AtomicLong(0);
 
 
 
     @Override
-    public int getIdle(){
+    public long getIdle(){
         return this.inside - value.get();
     }
 
@@ -29,7 +31,7 @@ public class Bucket extends IBucket<Integer> {
     }
 
     @Override
-    public Integer getAndIncrement() {
+    public Long getAndIncrement() {
         return value.getAndIncrement();
     }
 }

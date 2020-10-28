@@ -21,9 +21,9 @@ public class IdUtils {
      * @param insideId 当前号段中获取的值
      * @return
      */
-    public  static long makeTrueId(int prefix,int insideId){
-        return (prefix<<32)|insideId;
-    }
+//    public  static long makeTrueId(int prefix,int insideId){
+//        return (prefix<<32)|insideId;
+//    }
     public  static long makeTrueIdWhitHandle(int prefix, int insideId, IdPrefixHandler handler){
         prefix= handler.handle(prefix);
         return (prefix<<32)|insideId;

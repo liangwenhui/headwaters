@@ -158,7 +158,7 @@ public abstract class AbstractHeadwaters<T extends IBuffer,Y extends IBucket> im
      */
     protected abstract Result getIdFromBucketBuffer(final String key);
 
-    protected abstract long makeTrueId(int keyId,Object arg);
+//    protected abstract long makeTrueId(int keyId,Object arg);
 
     /**
      * 自旋等待

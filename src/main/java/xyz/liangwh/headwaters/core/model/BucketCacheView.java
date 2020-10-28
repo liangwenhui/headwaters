@@ -16,10 +16,10 @@ public class BucketCacheView {
     private boolean nextReady;
     private boolean backupThreadRunning;
     private boolean initStatus;
-    private int idle;
+    private long idle;
     private long currentValue;
-    private int currentInsideValue;
+    private long currentInsideValue;
     private long max;
-    private int inside;
+    private long inside;
 
 }

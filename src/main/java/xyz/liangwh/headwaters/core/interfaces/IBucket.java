@@ -12,7 +12,7 @@ import lombok.Data;
 public abstract class IBucket<T> {
 
     protected long max = 0;
-    protected int inside = 0;
+    protected long inside = 0;
     protected int step = 0;
     //可指向buffer
     protected IBuffer parent;
@@ -21,7 +21,7 @@ public abstract class IBucket<T> {
      * 获取id余量
      * @return
      */
-    public abstract int getIdle();
+    public abstract long getIdle();
 
     public abstract IBuffer getPar();
 

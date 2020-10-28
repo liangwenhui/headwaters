@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import xyz.liangwh.headwaters.netty.NettyServer;
 
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 
 @SpringBootApplication
 @Slf4j
@@ -28,14 +29,14 @@ public class HeadwatersApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        System.out.println(args);
+        System.out.println(Arrays.toString(args));
         if(args.length==1){//port
             String arg1 = args[0];
             if(StringUtils.isNumeric(arg1)){
                 port = Integer.parseInt(arg1);
             }
         }else
-        if(args.length==2){//ip port
+        if(args.length>=2){//ip port
             String arg1 = args[0];
             url = arg1;
             String arg2 = args[1];
