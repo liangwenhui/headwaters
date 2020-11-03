@@ -37,39 +37,34 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override//sequence test\n
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if(msg!=null){
-            RESPResult respResult = RESPUtil.translateToRESPResult((String) msg);
-            List<String> argList = respResult.getArgList();
-            String command = argList.get(0);
-            boolean contains = RESPUtil.COMMANDS_SET.contains(command);
-            if(contains){
-                if(!command.equals("PING")){
+
+        if(StringUtils.isNotBlank((String) msg)){
+            try {
+                RESPResult respResult = RESPUtil.translateToRESPResult((String) msg);
+                List<String> argList = respResult.getArgList();
+                String command = argList.get(0);
+                boolean contains = RESPUtil.COMMANDS_SET.contains(command);
+                if(contains){
                     if(argList.size()>1){
                         String key = argList.get(1);
                         Result id = idGenerator.getId(key);
-                        //Result id = new Result(200,1L);
-                        //respResult = new RESPResult();
                         if(id.getId()==null){
                             ctx.write(RESPUtil.makeSystemResult(RESPSysResult.ERROR, "code:"+id.getState()));
                         }else{
                             ctx.write(RESPUtil.translateToRESPInteage(id.getId()));
                         }
-                        //log.info(id.getId()+"");
                     }else{
                         ctx.write(RESPUtil.makeSystemResult(RESPSysResult.ERROR, "The format of command 'sequence' must be sequence key !"));
                     }
-                }else{
-                    ctx.write(RESPUtil.FLAG_SUCCESS+"PONG");
-                    ctx.write(RESPUtil.CRLF);
+                }else {
+                    ctx.write(RESPUtil.makeSystemResult(RESPSysResult.ERROR, "Only command 'PING','sequence'is supported !"));
                 }
-            }else {
-                ctx.write(RESPUtil.makeSystemResult(RESPSysResult.ERROR, "Only command 'PING','sequence'is supported !"));
+            }catch (Exception e){
+                ctx.write(RESPUtil.makeSystemResult(RESPSysResult.ERROR, e.getLocalizedMessage()));
             }
             //刷新缓存区
             ctx.flush();
         }
-        //System.out.println(ctx.channel().remoteAddress()+"----->Server :"+ msg.toString());
-        //将客户端的信息直接返回写入ctx
 
 
     }

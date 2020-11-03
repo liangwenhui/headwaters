@@ -50,7 +50,7 @@ public abstract class AbstractHeadwaters<T extends IBuffer,Y extends IBucket> im
     /**
      * 最大步长
      */
-    protected static final int MAX_STEP = 100_0000;
+    protected static final int MAX_STEP = 200_0000;
     /**
      * 一个BUCKET使用的持续时间，用于修改动态步长
      */

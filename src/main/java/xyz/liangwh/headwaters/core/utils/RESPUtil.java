@@ -32,7 +32,7 @@ public class RESPUtil {
     public final static Set<String> COMMANDS_SET = new HashSet();
 
     static {
-        COMMANDS_SET.add("PING");
+        //COMMANDS_SET.add("PING");
         COMMANDS_SET.add("sequence");
     }
 
@@ -77,7 +77,7 @@ public class RESPUtil {
     }
 
 
-    public static RESPResult translateToRESPResult(String resp){
+    public static RESPResult translateToRESPResult(String resp) throws Exception {
         RESPResult respResult = null;
 
         try {
@@ -92,9 +92,9 @@ public class RESPUtil {
         }catch (Exception e){
             respResult = null;
             e.printStackTrace();
-
+            throw new Exception("The data does not conform to redis protocol");
         }
-        return respResult;
+        //return respResult;
     }
 
     public static String translateToRESPInteage(long l){
