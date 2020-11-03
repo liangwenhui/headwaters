@@ -60,6 +60,8 @@ public abstract class AbstractHeadwaters<T extends IBuffer,Y extends IBucket> im
 
     protected Map<String, T> cache = new ConcurrentHashMap<>();
 
+    protected Object olock = new Object();
+
 
     protected ExecutorService service = new ThreadPoolExecutor(
             5,
@@ -140,7 +142,13 @@ public abstract class AbstractHeadwaters<T extends IBuffer,Y extends IBucket> im
             }
             return getIdFromBucketBuffer(key);
         }else {
-            return nullStrategy(key);
+            synchronized (olock){
+               if(!cache.containsKey(key)){
+                   return nullStrategy(key);
+               }else{
+                   return getId(key);
+               }
+            }
         }
 
     }
@@ -168,6 +176,7 @@ public abstract class AbstractHeadwaters<T extends IBuffer,Y extends IBucket> im
         int times = 0;
         while (bb.getBackupThreadRunning().get())
         {
+//            System.out.println("waitSomeTime");
             times++;
             if(times<3000){
                 try {

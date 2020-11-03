@@ -1,5 +1,6 @@
 package xyz.liangwh.headwaters.netty;
 
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
@@ -15,12 +16,14 @@ import xyz.liangwh.headwaters.core.utils.RESPUtil;
 import java.util.ArrayList;
 import java.util.List;
 @Slf4j
+@ChannelHandler.Sharable
 public class ServerHandler extends ChannelInboundHandlerAdapter {
 
 
     private IDGenerator idGenerator;
 
     public ServerHandler(IDGenerator idGenerator) {
+        System.out.println("ServerHandler");
         this.idGenerator= idGenerator;
     }
 
@@ -35,7 +38,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
     @Override//sequence test\n
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if(msg!=null){
-            RESPResult respResult = RESPUtil.TranslateToRESPResult((String) msg);
+            RESPResult respResult = RESPUtil.translateToRESPResult((String) msg);
             List<String> argList = respResult.getArgList();
             String command = argList.get(0);
             boolean contains = RESPUtil.COMMANDS_SET.contains(command);
@@ -44,8 +47,13 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
                     if(argList.size()>1){
                         String key = argList.get(1);
                         Result id = idGenerator.getId(key);
-                        respResult = new RESPResult();
-                        ctx.write(RESPUtil.TranslateToRESPString(respResult.append(id.getId()+""),true));
+                        //Result id = new Result(200,1L);
+                        //respResult = new RESPResult();
+                        if(id.getId()==null){
+                            ctx.write(RESPUtil.makeSystemResult(RESPSysResult.ERROR, "code:"+id.getState()));
+                        }else{
+                            ctx.write(RESPUtil.translateToRESPInteage(id.getId()));
+                        }
                         //log.info(id.getId()+"");
                     }else{
                         ctx.write(RESPUtil.makeSystemResult(RESPSysResult.ERROR, "The format of command 'sequence' must be sequence key !"));

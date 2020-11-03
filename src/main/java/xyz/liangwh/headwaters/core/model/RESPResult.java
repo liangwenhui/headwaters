@@ -43,10 +43,10 @@ public class RESPResult {
     public static void main(String[] args) {
         RESPResult r = new RESPResult();
         r.append("auth","lwh@13660161032","2000");
-        String s = RESPUtil.TranslateToRESPString(r,false);
+        String s = RESPUtil.translateToRESPString(r,false);
         System.out.println(s);
 
-        RESPResult respResult = RESPUtil.TranslateToRESPResult(s);
+        RESPResult respResult = RESPUtil.translateToRESPResult(s);
         System.out.println(respResult.toString());
 //        RESPUtil.COMMANDS_SET.contains("PONG");
 //        RESPUtil.COMMANDS_SET.contains("PONG1");

@@ -170,7 +170,7 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer,Bucket> impl
     public void updateBucket (final String key,Bucket bucket) throws Exception{
         StopWatch stopWatch = new Slf4JStopWatch();
         BucketBuffer bb = (BucketBuffer)bucket.getParent();
-        bb.getLock().writeLock().lock();
+       // bb.getLock().writeLock().lock();
         try {
             HeadwatersPo po;
             if(!bb.isInitStatus()){
@@ -207,7 +207,7 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer,Bucket> impl
         }catch (Exception e){
             throw  e;
         }finally {
-            bb.getLock().writeLock().unlock();
+          //  bb.getLock().writeLock().unlock();
             stopWatch.stop("updateBucket");
         }
     }

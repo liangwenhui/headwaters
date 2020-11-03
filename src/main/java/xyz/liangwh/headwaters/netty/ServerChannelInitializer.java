@@ -10,15 +10,18 @@ import xyz.liangwh.headwaters.core.interfaces.IDGenerator;
 public class ServerChannelInitializer extends ChannelInitializer<SocketChannel> {
 
     private IDGenerator idGenerator;
+    private   ServerHandler SERVER_HANDLER ;
 
     public ServerChannelInitializer(IDGenerator idGenerator) {
+        System.out.println("ServerChannelInitializer");
         this.idGenerator=idGenerator;
+        SERVER_HANDLER = new ServerHandler(idGenerator);
     }
 
     @Override
     protected void initChannel(SocketChannel socketChannel) throws Exception {
         socketChannel.pipeline().addLast("decoder",new StringDecoder(CharsetUtil.UTF_8));
         socketChannel.pipeline().addLast("encoder",new StringEncoder(CharsetUtil.UTF_8));
-        socketChannel.pipeline().addLast(new ServerHandler(idGenerator));
+        socketChannel.pipeline().addLast(SERVER_HANDLER);
     }
 }

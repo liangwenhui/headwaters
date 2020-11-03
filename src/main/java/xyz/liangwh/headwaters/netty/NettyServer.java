@@ -4,6 +4,7 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +25,11 @@ public class NettyServer {
         try {
             ServerBootstrap bootstrap = new ServerBootstrap()
                     .group(bossGroup, workerGroup)
+                    //.channel(EpollSocketChannel.class)
                     .channel(NioServerSocketChannel.class)
                     .localAddress(address)
                     .childHandler(new ServerChannelInitializer(idGenerator))
-                    .option(ChannelOption.SO_BACKLOG,128)
+                    .option(ChannelOption.SO_BACKLOG,255)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
             ChannelFuture future = bootstrap.bind(address).sync();
             future.channel().closeFuture().sync();

@@ -18,11 +18,12 @@ public class RESPUtil {
      */
     public final static String PREFIX_ARG_NUMS = "*";
     public final static String PREFIX_ARG_LENGTH = "$";
+    public final static String PREFIX_ARG_INTEAGE = ":";
     public final static String CRLF = "\r\n";
     public final static String FLAG_SUCCESS = "+";
     public final static String FLAG_ERROR = "-";
     public final static String OK = "OK";
-    public final static String ERROR = "ERROR";
+    public final static String ERROR = "Err";
     public final static String WRONG = "WRONG";
 
     /**
@@ -56,7 +57,7 @@ public class RESPUtil {
         return null;
     }
 
-    public static String TranslateToRESPString(RESPResult result,boolean isRes){
+    public static String translateToRESPString(RESPResult result,boolean isRes){
 
         try {
             StringBuffer resp = new StringBuffer();
@@ -76,7 +77,7 @@ public class RESPUtil {
     }
 
 
-    public static RESPResult TranslateToRESPResult(String resp){
+    public static RESPResult translateToRESPResult(String resp){
         RESPResult respResult = null;
 
         try {
@@ -94,6 +95,12 @@ public class RESPUtil {
 
         }
         return respResult;
+    }
+
+    public static String translateToRESPInteage(long l){
+        StringBuilder sb = new StringBuilder();
+        sb.append(PREFIX_ARG_INTEAGE).append(l).append(CRLF);
+        return sb.toString();
     }
 
 }
