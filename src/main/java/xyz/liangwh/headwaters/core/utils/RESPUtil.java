@@ -53,8 +53,8 @@ public class RESPUtil {
             return res.toString();
         }catch (Exception e){
             e.printStackTrace();
+            throw  e;
         }
-        return null;
     }
 
     public static String translateToRESPString(RESPResult result,boolean isRes){
