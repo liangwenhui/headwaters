@@ -5,23 +5,29 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.CharsetUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import xyz.liangwh.headwaters.core.interfaces.IDGenerator;
-
+@Component
 public class ServerChannelInitializer extends ChannelInitializer<SocketChannel> {
 
-    private IDGenerator idGenerator;
-    private   ServerHandler SERVER_HANDLER ;
+    @Autowired
+    private   ServerHandler serverHandler ;
 
-    public ServerChannelInitializer(IDGenerator idGenerator) {
+    public ServerChannelInitializer() {
         System.out.println("ServerChannelInitializer");
-        this.idGenerator=idGenerator;
-        SERVER_HANDLER = new ServerHandler(idGenerator);
     }
 
+    /**
+     * 每次tcp连接都会调用
+     * @param socketChannel
+     * @throws Exception
+     */
     @Override
     protected void initChannel(SocketChannel socketChannel) throws Exception {
+        System.out.println("initchanel");
         socketChannel.pipeline().addLast("decoder",new StringDecoder(CharsetUtil.UTF_8));
         socketChannel.pipeline().addLast("encoder",new StringEncoder(CharsetUtil.UTF_8));
-        socketChannel.pipeline().addLast(SERVER_HANDLER);
+        socketChannel.pipeline().addLast(serverHandler);
     }
 }

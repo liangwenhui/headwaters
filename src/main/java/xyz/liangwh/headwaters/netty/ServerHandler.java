@@ -8,6 +8,8 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import xyz.liangwh.headwaters.core.exception.HedisException;
 import xyz.liangwh.headwaters.core.interfaces.IDGenerator;
 import xyz.liangwh.headwaters.core.model.RESPResult;
@@ -17,13 +19,15 @@ import xyz.liangwh.headwaters.core.utils.RESPUtil;
 
 @Slf4j
 @ChannelHandler.Sharable
+@Component
 public class ServerHandler extends ChannelInboundHandlerAdapter {
 
+    @Autowired
     private IDGenerator idGenerator;
 
-    public ServerHandler(IDGenerator idGenerator) {
+    public ServerHandler() {
         System.out.println("ServerHandler");
-        this.idGenerator = idGenerator;
+//        this.idGenerator = idGenerator;
     }
 
     @Override
