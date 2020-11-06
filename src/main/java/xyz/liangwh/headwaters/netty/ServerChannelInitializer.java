@@ -14,6 +14,10 @@ public class ServerChannelInitializer extends ChannelInitializer<SocketChannel> 
     @Autowired
     private   ServerHandler serverHandler ;
 
+    private StringDecoder decoder = new StringDecoder(CharsetUtil.UTF_8);
+    private StringEncoder encoder = new StringEncoder(CharsetUtil.UTF_8);
+
+
     public ServerChannelInitializer() {
         System.out.println("ServerChannelInitializer");
     }
@@ -25,9 +29,9 @@ public class ServerChannelInitializer extends ChannelInitializer<SocketChannel> 
      */
     @Override
     protected void initChannel(SocketChannel socketChannel) throws Exception {
-        System.out.println("initchanel");
-        socketChannel.pipeline().addLast("decoder",new StringDecoder(CharsetUtil.UTF_8));
-        socketChannel.pipeline().addLast("encoder",new StringEncoder(CharsetUtil.UTF_8));
+//        System.out.println("initchanel");
+        socketChannel.pipeline().addLast("decoder",decoder);
+        socketChannel.pipeline().addLast("encoder",encoder);
         socketChannel.pipeline().addLast(serverHandler);
     }
 }
