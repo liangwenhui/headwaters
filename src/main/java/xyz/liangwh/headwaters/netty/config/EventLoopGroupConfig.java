@@ -20,21 +20,22 @@ public class EventLoopGroupConfig {
 
     @Bean( name = "bossGroup" )
     public EventLoopGroup bossGroup() {
-       return createLoopGroup(1,new DefaultThreadFactory("netty-boos-"));
+        //,new DefaultThreadFactory("netty-boos-")
+       return createLoopGroup(1,null);
     }
 
     @Bean( name = "workerGroup" )
     public EventLoopGroup workerGroup() {
-       return createLoopGroup(workerNums,new DefaultThreadFactory("netty-worker-"));
+       return createLoopGroup(workerNums,null);
     }
 
 
     private EventLoopGroup createLoopGroup(int nums , ThreadFactory threadFactory) {
         EventLoopGroup group = null;
         if(Epoll.isAvailable()){
-            group = new EpollEventLoopGroup(nums, threadFactory);
+            group = new EpollEventLoopGroup(nums);
         }else{
-            group  = new NioEventLoopGroup(nums,threadFactory);
+            group  = new NioEventLoopGroup(nums);
         }
         return group;
     }
