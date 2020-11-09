@@ -177,7 +177,6 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer, Bucket> imp
     public void updateBucket(final String key, Bucket bucket) throws HedisException {
         StopWatch stopWatch = new Slf4JStopWatch();
         BucketBuffer bb = (BucketBuffer) bucket.getParent();
-        // bb.getLock().writeLock().lock();
         try {
             HeadwatersPo po;
             if (!bb.isInitStatus()) {
@@ -219,7 +218,6 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer, Bucket> imp
             throw new HedisException(HedisError.REDIS_APPLY_ID_ERROR, "redis apply id failed ", e);
         }
         finally {
-            // bb.getLock().writeLock().unlock();
             stopWatch.stop("updateBucket");
         }
     }

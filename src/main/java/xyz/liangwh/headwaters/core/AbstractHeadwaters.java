@@ -185,7 +185,7 @@ public abstract class AbstractHeadwaters<T extends IBuffer, Y extends IBucket> i
             times++;
             if (times < 3000) {
                 try {
-                    TimeUnit.MILLISECONDS.sleep(10);
+                    TimeUnit.MILLISECONDS.sleep(5);
                 }
                 catch (InterruptedException e) {
                     log.warn("Thread {} Interrupted", Thread.currentThread().getName());
@@ -194,7 +194,7 @@ public abstract class AbstractHeadwaters<T extends IBuffer, Y extends IBucket> i
             }
             else if (times < 10000) {
                 try {
-                    TimeUnit.MILLISECONDS.sleep(20);
+                    TimeUnit.MILLISECONDS.sleep(15);
                 }
                 catch (InterruptedException e) {
                     log.warn("Thread {} Interrupted", Thread.currentThread().getName());

@@ -60,6 +60,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
             return;
         }finally {
             ctx.flush();
+            arm.release();
         }
     }
 
