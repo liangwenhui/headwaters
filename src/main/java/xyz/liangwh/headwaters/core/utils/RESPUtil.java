@@ -101,7 +101,7 @@ public class RESPUtil {
         }
         catch (Exception e) {
             log.error("执行异常", e);
-            throw new HedisException(HedisError.REDIS_PROTOCOL_ERROR, "The data does not conform to redis protocol", e);
+            throw new HedisException(HedisError.REDIS_PROTOCOL_ERROR, "The data does not conform to redis(hw) protocol", e);
         }
     }
 
