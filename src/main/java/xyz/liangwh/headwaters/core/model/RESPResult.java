@@ -46,8 +46,8 @@ public class RESPResult {
         String s = RESPUtil.translateToRESPString(r,false);
         System.out.println(s);
 
-        RESPResult respResult = RESPUtil.translateToRESPResult(s);
-        System.out.println(respResult.toString());
+       // RESPResult respResult = RESPUtil.translateToRESPResult(s);
+      //  System.out.println(respResult.toString());
 //        RESPUtil.COMMANDS_SET.contains("PONG");
 //        RESPUtil.COMMANDS_SET.contains("PONG1");
 //        String s1 = RESPUtil.makeSystemResult(RESPSysResult.ERROR, "message sss ss as ");

@@ -1,22 +1,20 @@
 package xyz.liangwh.headwaters.core.model;
 
-import lombok.Data;
 import lombok.Getter;
 import xyz.liangwh.headwaters.core.utils.RESPUtil;
 
-
 public enum RESPSysResult {
 
+    OK(RESPUtil.FLAG_SUCCESS, RESPUtil.OK), ERROR(RESPUtil.FLAG_ERROR, RESPUtil.ERROR), WRONG(RESPUtil.FLAG_ERROR,
+        RESPUtil.WRONG);
 
-    OK(RESPUtil.FLAG_SUCCESS,RESPUtil.OK),
-    ERROR(RESPUtil.FLAG_ERROR,RESPUtil.ERROR),
-    WRONG(RESPUtil.FLAG_ERROR,RESPUtil.WRONG);
     @Getter
     private String flag;
+
     @Getter
     private String type;
 
-    private  RESPSysResult(String flag,String type){
+    RESPSysResult(String flag, String type) {
         this.flag = flag;
         this.type = type;
     }
