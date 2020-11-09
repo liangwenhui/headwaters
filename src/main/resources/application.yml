@@ -18,23 +18,26 @@ spring:
 #    Proxy服务地址：172.16.18.179:6660
 #    访问密码：zcache0:seq/WctCode@2020
 #    分表id(db): 17
-    host: 134.175.130.172
-    port: 6379
-    password: lwh@13660161032
-#    host: 172.16.18.179
-#    port: 6660
-#    password: zcache0:seq/WctCode@2020
+#    host: 134.175.130.172
+#    port: 6379
+#    password: lwh@13660161032
+#    database: 0
+    host: 172.16.18.179
+    port: 6660
+    password: zcache0:seq/WctCode@2020
+    database: 17
     lettuce:
       pool:
         max-active: 8
         max-wait: -1
         max-idle: 8
         min-idle: 1
-    database: 0
+
+
 
 gid:
   key: 0027015537_hw
-  step: 100000
+  step: 10
 
 netty:
   port: 8080

@@ -66,7 +66,7 @@ public abstract class AbstractHeadwaters<T extends IBuffer, Y extends IBucket> i
 
     protected Object olock = new Object();
 
-    protected ExecutorService service = new ThreadPoolExecutor(5, 10, 120L, TimeUnit.SECONDS,
+    protected ExecutorService service = new ThreadPoolExecutor(3, 10, 120L, TimeUnit.SECONDS,
         new SynchronousQueue<Runnable>(), new UpdateHeadwaterTheadFactory());
 
     public static class UpdateHeadwaterTheadFactory implements ThreadFactory {
@@ -96,8 +96,8 @@ public abstract class AbstractHeadwaters<T extends IBuffer, Y extends IBucket> i
         log.info("init...");
         updateCache();
         this.initStatus = true;
-        // 定时更新
-        updateRegularly();
+        // 定时更新 集群方式才需要
+        //updateRegularly();
     }
 
     /**

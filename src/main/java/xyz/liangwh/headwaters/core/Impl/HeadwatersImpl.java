@@ -94,6 +94,15 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer, Bucket> imp
 
     }
 
+    private void insterCache(HeadwatersPo po){
+        BucketBuffer buffer = new BucketBuffer();
+        buffer.setGid(po.getGid());
+        buffer.setKey(po.getKey());
+        cache.put(po.getKey(), buffer);
+        log.info("[insterCache] add buckerbuffer {}", buffer);
+    }
+
+
     // public long makeTrueId(int keyId,Object arg){
     // return IdUtils.makeTrueId(keyId,(Integer) arg);
     // }
@@ -207,7 +216,7 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer, Bucket> imp
         }
         catch (Exception e) {
             log.error("redis申请id异常", e);
-            throw new HedisException(HedisError.REDIS_APPLY_ID_ERROR, "redis apply id error", e);
+            throw new HedisException(HedisError.REDIS_APPLY_ID_ERROR, "redis apply id failed ", e);
         }
         finally {
             // bb.getLock().writeLock().unlock();
@@ -248,8 +257,8 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer, Bucket> imp
 
     @Override
     protected Result nullStrategy(String key) {
-        hwMarkDao.updateAndGetHeadwaters(key);
-        updateCache();
+        HeadwatersPo po = hwMarkDao.updateAndGetHeadwaters(key);
+        insterCache(po);//updateCache();
         return super.getId(key);
     }
 
