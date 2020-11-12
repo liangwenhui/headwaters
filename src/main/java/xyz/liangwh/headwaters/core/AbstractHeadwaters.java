@@ -53,7 +53,7 @@ public abstract class AbstractHeadwaters<T extends IBuffer, Y extends IBucket> i
     /**
      * 最大步长
      */
-    protected static final int MAX_STEP = 200_0000;
+    protected static final int MAX_STEP = 6000000;
 
     /**
      * 一个BUCKET使用的持续时间，用于修改动态步长
@@ -131,17 +131,19 @@ public abstract class AbstractHeadwaters<T extends IBuffer, Y extends IBucket> i
         if (cache.containsKey(key)) {
             T bb = cache.get(key);
             if (!bb.isInitStatus()) {
-                synchronized (bb) {
+                try {
+                    bb.getLock().writeLock().lock();
+//                synchronized (bb) {
                     if (!bb.isInitStatus()) {
-                        try {
-                            updateBucket(key, (Y) bb.getCurrent());
-                            log.info("init BucketBuffer,update key {} {}", key, bb.getCurrent());
-                            bb.setInitStatus(true);
-                        }
-                        catch (Exception e) {
-                            log.error("init BucketBuffer faild,key = {}", key, e);
-                        }
+                        updateBucket(key, (Y) bb.getCurrent());
+                        log.info("init BucketBuffer,update key {} {}", key, bb.getCurrent());
+                        bb.setInitStatus(true);
                     }
+//                }
+                }catch (Exception e) {
+                    log.error("init BucketBuffer faild,key = {}", key, e);
+                }finally {
+                    bb.getLock().writeLock().unlock();
                 }
             }
             return getIdFromBucketBuffer(key);

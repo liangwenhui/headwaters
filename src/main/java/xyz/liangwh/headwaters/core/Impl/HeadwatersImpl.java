@@ -110,7 +110,7 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer, Bucket> imp
     public Result getIdFromBucketBuffer(final String key) {
         final BucketBuffer bb = cache.get(key);
         while (true) {
-            bb.getLock().readLock().lock();
+
             try {
                 final Bucket bucket = bb.getCurrent();
                 // 异步初始化刷新备用水桶
@@ -128,10 +128,10 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer, Bucket> imp
                         }
                         finally {
                             if (flag) {
-                                bb.getLock().writeLock().lock();
+                                //bb.getLock().writeLock().lock();
                                 bb.setNextReady(true);
                                 bb.getBackupThreadRunning().set(false);
-                                bb.getLock().writeLock().unlock();
+                                //bb.getLock().writeLock().unlock();
                             }
                             else {
                                 bb.getBackupThreadRunning().set(false);
@@ -140,13 +140,15 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer, Bucket> imp
                     });
                 }
                 // long value = IdUtils.makeTrueId(0,bucket.getValue().getAndIncrement());
+                bb.getLock().readLock().lock();
                 long value = bucket.getValue().getAndIncrement();
+                bb.getLock().readLock().unlock();
                 if (value < bucket.getMax()) {
                     return new Result(RESULT_OK, value);
                 }
             }
             finally {
-                bb.getLock().readLock().unlock();
+
             }
             // 上方获取不到id，表示id消费的太快了，等待异步线程初始化
             waitSomeTime(bb);
@@ -205,6 +207,7 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer, Bucket> imp
                 bb.setUpdateTs(System.currentTimeMillis());
                 bb.setStep(po.getStep());
             }
+            //log.info("po.getInsideId() {}",po.getInsideId());
             int value = po.getInsideId() - bb.getAutoStep() + 1;
             bucket.getValue().set(value);
             bucket.setInside(po.getInsideId());
