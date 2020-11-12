@@ -15,7 +15,7 @@ import java.util.concurrent.ThreadFactory;
 public class EventLoopGroupConfig {
 
 
-    private int workerNums = 6;
+    private int workerNums = 8;
 
 
     @Bean( name = "bossGroup" )
@@ -29,6 +29,16 @@ public class EventLoopGroupConfig {
        return createLoopGroup(workerNums,null);
     }
 
+    @Bean( name = "busiGroup" )
+    public EventLoopGroup[] busiGroup() {
+        EventLoopGroup[] busis = new EventLoopGroup[4];
+        busis[0] =  createLoopGroup(2,null);
+        busis[1] =  createLoopGroup(2,null);
+        busis[2] =  createLoopGroup(2,null);
+        busis[3] =  createLoopGroup(2,null);
+
+        return busis;
+    }
 
     private EventLoopGroup createLoopGroup(int nums , ThreadFactory threadFactory) {
         EventLoopGroup group = null;
