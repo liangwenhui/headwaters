@@ -37,7 +37,7 @@ spring:
 
 gid:
   key: 0027015537_hw
-  step: 10000
+  step: 600000
 
 netty:
   port: 8080
