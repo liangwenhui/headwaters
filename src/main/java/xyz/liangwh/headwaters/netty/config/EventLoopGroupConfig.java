@@ -15,7 +15,7 @@ import java.util.concurrent.ThreadFactory;
 public class EventLoopGroupConfig {
 
 
-    private int workerNums = 6;
+    private int workerNums = 8;
 
 
     @Bean( name = "bossGroup" )
