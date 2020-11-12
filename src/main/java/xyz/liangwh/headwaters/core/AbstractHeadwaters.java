@@ -124,27 +124,26 @@ public abstract class AbstractHeadwaters<T extends IBuffer, Y extends IBucket> i
      * @return
      */
     @Override
-    public Result getId(final String key) {
+    public Result getId(final String key) throws HedisException {
         if (!this.initStatus) {
             return new Result(EXCEPTION_ID_CACHE_INIT_FALSE, null);
         }
         if (cache.containsKey(key)) {
             T bb = cache.get(key);
             if (!bb.isInitStatus()) {
-                try {
-                    bb.getLock().writeLock().lock();
-//                synchronized (bb) {
-                    if (!bb.isInitStatus()) {
-                        updateBucket(key, (Y) bb.getCurrent());
-                        log.info("init BucketBuffer,update key {} {}", key, bb.getCurrent());
-                        bb.setInitStatus(true);
+
+                synchronized (bb) {
+                    try {
+                        if (!bb.isInitStatus()) {
+                            updateBucket(key, (Y) bb.getCurrent());
+                            log.info("init BucketBuffer,update key {} {}", key, bb.getCurrent());
+                            bb.setInitStatus(true);
+                        }
+                    }catch (Exception e) {
+                        log.error("init BucketBuffer faild,key = {}", key, e);
                     }
-//                }
-                }catch (Exception e) {
-                    log.error("init BucketBuffer faild,key = {}", key, e);
-                }finally {
-                    bb.getLock().writeLock().unlock();
                 }
+
             }
             return getIdFromBucketBuffer(key);
         }
@@ -161,7 +160,7 @@ public abstract class AbstractHeadwaters<T extends IBuffer, Y extends IBucket> i
 
     }
 
-    protected Result nullStrategy(String key) {
+    protected Result nullStrategy(String key) throws HedisException {
         return new Result(EXCEPTION_ID_KEY_NOT_EXISTS, null);
     }
 
@@ -171,7 +170,7 @@ public abstract class AbstractHeadwaters<T extends IBuffer, Y extends IBucket> i
      * @param key
      * @return
      */
-    protected abstract Result getIdFromBucketBuffer(final String key);
+    protected abstract Result getIdFromBucketBuffer(final String key) throws HedisException;
 
     // protected abstract long makeTrueId(int keyId,Object arg);
 

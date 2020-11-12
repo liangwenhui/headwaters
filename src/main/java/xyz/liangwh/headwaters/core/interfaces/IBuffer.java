@@ -22,7 +22,7 @@ public abstract class IBuffer <T extends IBucket>{
     protected volatile boolean initStatus = false;//是否完成初始化
     //异步线程是否运行中
     protected final AtomicBoolean backupThreadRunning = new AtomicBoolean(false);
-    protected final ReadWriteLock lock = new ReentrantReadWriteLock();
+    //protected final ReadWriteLock lock = new ReentrantReadWriteLock();
     protected volatile int step;
     protected volatile int autoStep;
     protected volatile long updateTs=0;

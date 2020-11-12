@@ -1,5 +1,6 @@
 package xyz.liangwh.headwaters.core.interfaces;
 
+import xyz.liangwh.headwaters.core.exception.HedisException;
 import xyz.liangwh.headwaters.core.model.Result;
 
 /**
@@ -13,5 +14,5 @@ public interface IDGenerator {
      * @param key
      * @return
      */
-    Result getId(String key);
+    Result getId(String key) throws HedisException;
 }

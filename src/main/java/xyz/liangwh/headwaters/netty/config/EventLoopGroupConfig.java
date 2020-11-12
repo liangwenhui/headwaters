@@ -29,6 +29,18 @@ public class EventLoopGroupConfig {
        return createLoopGroup(workerNums,null);
     }
 
+    @Bean( name = "busiGroup" )
+    public EventLoopGroup[] busiGroup() {
+        EventLoopGroup[] busis = new EventLoopGroup[4];
+        busis[0] =  createLoopGroup(3,null);
+        busis[1] =  createLoopGroup(3,null);
+        busis[2] =  createLoopGroup(3,null);
+        busis[3] =  createLoopGroup(3,null);
+
+        return busis;
+    }
+
+
 
     private EventLoopGroup createLoopGroup(int nums , ThreadFactory threadFactory) {
         EventLoopGroup group = null;

@@ -107,16 +107,16 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer, Bucket> imp
     // return IdUtils.makeTrueId(keyId,(Integer) arg);
     // }
 
-    public Result getIdFromBucketBuffer(final String key) {
+    public Result getIdFromBucketBuffer(final String key) throws HedisException {
         final BucketBuffer bb = cache.get(key);
+        int tryTime = 0;
         while (true) {
-
             try {
                 final Bucket bucket = bb.getCurrent();
                 // 异步初始化刷新备用水桶
                 if ((!bb.isNextReady()) && (bucket.getIdle() < 0.8 * bucket.getStep())
                     && bb.getBackupThreadRunning().compareAndSet(false, true)) {
-                    service.execute(() -> {
+//                    service.execute(() -> {
                         Bucket next = bb.getBuckets()[bb.getNextIndex()];
                         boolean flag = false;
                         try {
@@ -129,7 +129,8 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer, Bucket> imp
                         finally {
                             if (flag) {
                                 //bb.getLock().writeLock().lock();
-                                bb.setNextReady(true);
+                                //bb.setNextReady(true);
+                                bb.checkoutCurrent();
                                 bb.getBackupThreadRunning().set(false);
                                 //bb.getLock().writeLock().unlock();
                             }
@@ -137,12 +138,12 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer, Bucket> imp
                                 bb.getBackupThreadRunning().set(false);
                             }
                         }
-                    });
+//                    });
                 }
                 // long value = IdUtils.makeTrueId(0,bucket.getValue().getAndIncrement());
-                bb.getLock().readLock().lock();
+                //bb.getLock().readLock().lock();
                 long value = bucket.getValue().getAndIncrement();
-                bb.getLock().readLock().unlock();
+               // bb.getLock().readLock().unlock();
                 if (value < bucket.getMax()) {
                     return new Result(RESULT_OK, value);
                 }
@@ -150,28 +151,32 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer, Bucket> imp
             finally {
 
             }
+            tryTime++;
+            if (tryTime>3){
+                throw new HedisException(HedisError.REDIS_PROTOCOL_ERROR,"try 3 times ,can not get seq");
+            }
             // 上方获取不到id，表示id消费的太快了，等待异步线程初始化
             waitSomeTime(bb);
-            bb.getLock().writeLock().lock();
-            try {
-                final Bucket bucket = bb.getCurrent();
-                // long value = IdUtils.makeTrueId(0,bucket.getValue().getAndIncrement());
-                long value = bucket.getValue().getAndIncrement();
-                if (value < bucket.getMax()) {
-                    return new Result(RESULT_OK, value);
-                }
-                if (bb.isNextReady()) {
-                    bb.checkoutCurrent();
-                    bb.setNextReady(false);
-                }
-                else {
-                    log.error("boths bucket in {} are not ready to use!", bb.getKey());
-                    return new Result(EXCEPTION_ID_BOTH_BUCKET_NULL, null);
-                }
-            }
-            finally {
-                bb.getLock().writeLock().unlock();
-            }
+//            bb.getLock().writeLock().lock();
+//            try {
+//                final Bucket bucket = bb.getCurrent();
+//                // long value = IdUtils.makeTrueId(0,bucket.getValue().getAndIncrement());
+//                long value = bucket.getValue().getAndIncrement();
+//                if (value < bucket.getMax()) {
+//                    return new Result(RESULT_OK, value);
+//                }
+//                if (bb.isNextReady()) {
+//                    bb.checkoutCurrent();
+//                    bb.setNextReady(false);
+//                }
+//                else {
+//                    log.error("boths bucket in {} are not ready to use!", bb.getKey());
+//                    return new Result(EXCEPTION_ID_BOTH_BUCKET_NULL, null);
+//                }
+//            }
+//            finally {
+//                bb.getLock().writeLock().unlock();
+//            }
         }
 
     }
@@ -228,36 +233,36 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer, Bucket> imp
     @Override
     public Map getInfo() {
         Map res = new HashMap();
-        if (cache == null || cache.size() == 0) {
-            return null;
-        }
-        Set<String> keySet = cache.keySet();
-        for (String key : keySet) {
-            BucketCacheView view = new BucketCacheView();
-            view.setKey(key);
-            BucketBuffer bucketBuffer = cache.get(key);
-            view.setGid(bucketBuffer.getGid());
-            view.setStep(bucketBuffer.getStep());
-            view.setAutoStep(bucketBuffer.getAutoStep());
-            view.setCurrentBucketIndex(bucketBuffer.getCurrentBucket());
-            view.setNextReady(bucketBuffer.isNextReady());
-            view.setBackupThreadRunning(bucketBuffer.getBackupThreadRunning().get());
-            view.setInitStatus(bucketBuffer.isInitStatus());
-            Bucket current = bucketBuffer.getCurrent();
-            view.setIdle(current.getIdle());
-
-            // view.setCurrentValue(makeTrueId(0,current.getValue().get()));
-            view.setCurrentValue(current.getValue().get());
-            view.setCurrentInsideValue(current.getValue().get());
-            view.setMax(current.getMax());
-            view.setInside(current.getInside());
-            res.put(key, view);
-        }
+//        if (cache == null || cache.size() == 0) {
+//            return null;
+//        }
+//        Set<String> keySet = cache.keySet();
+//        for (String key : keySet) {
+//            BucketCacheView view = new BucketCacheView();
+//            view.setKey(key);
+//            BucketBuffer bucketBuffer = cache.get(key);
+//            view.setGid(bucketBuffer.getGid());
+//            view.setStep(bucketBuffer.getStep());
+//            view.setAutoStep(bucketBuffer.getAutoStep());
+//            view.setCurrentBucketIndex(bucketBuffer.getCurrentBucket());
+//            view.setNextReady(bucketBuffer.isNextReady());
+//            view.setBackupThreadRunning(bucketBuffer.getBackupThreadRunning().get());
+//            view.setInitStatus(bucketBuffer.isInitStatus());
+//            Bucket current = bucketBuffer.getCurrent();
+//            view.setIdle(current.getIdle());
+//
+//            // view.setCurrentValue(makeTrueId(0,current.getValue().get()));
+//            view.setCurrentValue(current.getValue().get());
+//            view.setCurrentInsideValue(current.getValue().get());
+//            view.setMax(current.getMax());
+//            view.setInside(current.getInside());
+//            res.put(key, view);
+//        }
         return res;
     }
 
     @Override
-    protected Result nullStrategy(String key) {
+    protected Result nullStrategy(String key) throws HedisException {
         HeadwatersPo po = hwMarkDao.updateAndGetHeadwaters(key);
         insterCache(po);//updateCache();
         return super.getId(key);

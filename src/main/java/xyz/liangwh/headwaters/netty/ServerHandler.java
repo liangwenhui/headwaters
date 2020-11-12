@@ -2,6 +2,7 @@ package xyz.liangwh.headwaters.netty;
 
 import java.util.List;
 
+import io.netty.channel.EventLoopGroup;
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.redis.ArrayRedisMessage;
 import io.netty.handler.codec.redis.ErrorRedisMessage;
@@ -15,6 +16,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import xyz.liangwh.headwaters.core.exception.HedisError;
 import xyz.liangwh.headwaters.core.exception.HedisException;
@@ -32,6 +34,10 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
     @Autowired
     private IDGenerator idGenerator;
 
+    @Autowired
+    @Qualifier("busiGroup")
+    private EventLoopGroup[] busiGroup;
+
     public ServerHandler() {
         System.out.println("ServerHandler");
 //        this.idGenerator = idGenerator;
@@ -47,19 +53,17 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
         ArrayRedisMessage arm = (ArrayRedisMessage)msg;
         try{
             String key = assertVerificat(arm);
-            getId(ctx,key);
-        }catch (HedisException hex){
-            ctx.write(new ErrorRedisMessage(hex.getMessage()));
-            return;
-        }catch (DecoderException de){
-            ctx.write(new ErrorRedisMessage( de.getMessage()));
-            return;
+            busiGroup[key.hashCode()%4]
+            .execute(()->{
+                    getId(ctx,key);
+            });
+
         }
         catch(Exception e){
             ctx.write(new ErrorRedisMessage( e.getLocalizedMessage()));
+            ctx.flush();
             return;
         }finally {
-            ctx.flush();
             arm.release();
         }
     }
@@ -82,18 +86,32 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
     }
 
-    private void getId(ChannelHandlerContext ctx,String key){
-        Result id = idGenerator.getId(key);
-        if (id.getId() == null) {
+    private void getId(ChannelHandlerContext ctx,String key) {
+        try{
+            Result id = idGenerator.getId(key);
+            if (id.getId() == null) {
+                //ctx.write(RESPUtil.makeSystemResult(RESPSysResult.ERROR, "code:" + id.getState()));
+                ctx.write( new ErrorRedisMessage("get id failed , err code:" + id.getState()));
+            }
+            else {
+                //ctx.write(RESPUtil.translateToRESPInteage(id.getId()));
+                ctx.write( new IntegerRedisMessage(id.getId()));
+                //return id.getId();
+            }
+        }catch (HedisException hex){
+            ctx.write(new ErrorRedisMessage(hex.getMessage()));
+            return;
+        }catch (DecoderException de){
+            ctx.write(new ErrorRedisMessage( de.getMessage()));
+            return;
+        }
+        catch(Exception e){
+            ctx.write(new ErrorRedisMessage( e.getLocalizedMessage()));
+            return;
+        }finally {
+            ctx.flush();
+        }
 
-            //ctx.write(RESPUtil.makeSystemResult(RESPSysResult.ERROR, "code:" + id.getState()));
-            ctx.write( new ErrorRedisMessage("get id failed , err code:" + id.getState()));
-        }
-        else {
-            //ctx.write(RESPUtil.translateToRESPInteage(id.getId()));
-            ctx.write( new IntegerRedisMessage(id.getId()));
-            //return id.getId();
-        }
     }
 
 
