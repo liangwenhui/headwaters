@@ -1,6 +1,7 @@
 package xyz.liangwh.headwaters.netty;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoop;
@@ -40,8 +41,9 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 //        this.idGenerator = idGenerator;
     }
     @Autowired
-    @Qualifier("busiGroup")
-    private EventLoopGroup[] busiGroup;
+    @Qualifier("busiService")
+    private ExecutorService[] busiService;
+    //private EventLoopGroup[] busiGroup;
 
     @Override
     public void channelActive(ChannelHandlerContext ctx)  {
@@ -53,7 +55,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
         ArrayRedisMessage arm = (ArrayRedisMessage)msg;
         try{
             String key = assertVerificat(arm);
-            busiGroup[key.hashCode()%4].execute(()->{
+            busiService[key.hashCode()%4].execute(()->{
                 getId(ctx,key);
             });
         }

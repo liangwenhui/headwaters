@@ -9,13 +9,15 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 @Configuration
 public class EventLoopGroupConfig {
 
 
-    private int workerNums = 8;
+    private int workerNums = 12;
 
 
     @Bean( name = "bossGroup" )
@@ -29,15 +31,25 @@ public class EventLoopGroupConfig {
        return createLoopGroup(workerNums,null);
     }
 
-    @Bean( name = "busiGroup" )
-    public EventLoopGroup[] busiGroup() {
-        EventLoopGroup[] busis = new EventLoopGroup[4];
-        busis[0] =  createLoopGroup(2,null);
-        busis[1] =  createLoopGroup(2,null);
-        busis[2] =  createLoopGroup(2,null);
-        busis[3] =  createLoopGroup(2,null);
+//    @Bean( name = "busiGroup" )
+//    public EventLoopGroup[] busiGroup() {
+//        EventLoopGroup[] busis = new EventLoopGroup[4];
+//        busis[0] =  createLoopGroup(2,null);
+//        busis[1] =  createLoopGroup(2,null);
+//        busis[2] =  createLoopGroup(2,null);
+//        busis[3] =  createLoopGroup(2,null);
+//
+//        return busis;
+//    }
+    @Bean( name = "busiService" )
+    public ExecutorService[] busiService(){
+        ExecutorService[] busiService= new ExecutorService[4];
+        busiService[0] =  Executors.newFixedThreadPool(3);
+        busiService[1] =  Executors.newFixedThreadPool(3);
+        busiService[2] =  Executors.newFixedThreadPool(3);
+        busiService[3] =  Executors.newFixedThreadPool(3);
 
-        return busis;
+        return busiService;
     }
 
     private EventLoopGroup createLoopGroup(int nums , ThreadFactory threadFactory) {
