@@ -177,13 +177,15 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer, Bucket> imp
     public void updateBucket(final String key, Bucket bucket) throws HedisException {
         StopWatch stopWatch = new Slf4JStopWatch();
         BucketBuffer bb = (BucketBuffer) bucket.getParent();
+
         try {
             HeadwatersPo po;
             if (!bb.isInitStatus()) {
-                po = hwMarkDao.updateAndGetHeadwaters(key);
+                po = hwMarkDao.updateAndGetHeadwaters(bb.getMax(),key);
                 bb.setStep(po.getStep());
                 bb.setAutoStep(po.getStep());
                 bb.setUpdateTs(System.currentTimeMillis());
+                bb.setMax(po.getInsideId());
             }
             else {
                 long duration = System.currentTimeMillis() - bb.getUpdateTs();
@@ -200,18 +202,16 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer, Bucket> imp
                 }
                 log.info("key[{}],step[{}],autoStep[{}],duration[{}ms]", key, bb.getStep(), autoStep, duration);
                 bb.setAutoStep(autoStep);
-                po = hwMarkDao.updateAutoAndGetHeadwaters(key, autoStep);
-                // po = hwMarkDao.updateAndGetHeadwaters(key);
+                po = hwMarkDao.updateAutoAndGetHeadwaters(bb.getMax(),key, autoStep);
                 bb.setUpdateTs(System.currentTimeMillis());
                 bb.setStep(po.getStep());
+                bb.setMax(po.getInsideId());
             }
             int value = po.getInsideId() - bb.getAutoStep() + 1;
             bucket.getValue().set(value);
             bucket.setInside(po.getInsideId());
             bucket.setMax(bucket.getInside());
-            // bucket.setMax(IdUtils.makeTrueId(0,bucket.getInside()));
             bucket.setStep(bb.getAutoStep());
-
         }
         catch (Exception e) {
             log.error("redis申请id异常", e);
@@ -222,40 +222,44 @@ public class HeadwatersImpl extends AbstractHeadwaters<BucketBuffer, Bucket> imp
         }
     }
 
+    private void updateFromFile(){
+
+    }
+
     @Override
     public Map getInfo() {
         Map res = new HashMap();
-        if (cache == null || cache.size() == 0) {
-            return null;
-        }
-        Set<String> keySet = cache.keySet();
-        for (String key : keySet) {
-            BucketCacheView view = new BucketCacheView();
-            view.setKey(key);
-            BucketBuffer bucketBuffer = cache.get(key);
-            view.setGid(bucketBuffer.getGid());
-            view.setStep(bucketBuffer.getStep());
-            view.setAutoStep(bucketBuffer.getAutoStep());
-            view.setCurrentBucketIndex(bucketBuffer.getCurrentBucket());
-            view.setNextReady(bucketBuffer.isNextReady());
-            view.setBackupThreadRunning(bucketBuffer.getBackupThreadRunning().get());
-            view.setInitStatus(bucketBuffer.isInitStatus());
-            Bucket current = bucketBuffer.getCurrent();
-            view.setIdle(current.getIdle());
-
-            // view.setCurrentValue(makeTrueId(0,current.getValue().get()));
-            view.setCurrentValue(current.getValue().get());
-            view.setCurrentInsideValue(current.getValue().get());
-            view.setMax(current.getMax());
-            view.setInside(current.getInside());
-            res.put(key, view);
-        }
+//        if (cache == null || cache.size() == 0) {
+//            return null;
+//        }
+//        Set<String> keySet = cache.keySet();
+//        for (String key : keySet) {
+//            BucketCacheView view = new BucketCacheView();
+//            view.setKey(key);
+//            BucketBuffer bucketBuffer = cache.get(key);
+//            view.setGid(bucketBuffer.getGid());
+//            view.setStep(bucketBuffer.getStep());
+//            view.setAutoStep(bucketBuffer.getAutoStep());
+//            view.setCurrentBucketIndex(bucketBuffer.getCurrentBucket());
+//            view.setNextReady(bucketBuffer.isNextReady());
+//            view.setBackupThreadRunning(bucketBuffer.getBackupThreadRunning().get());
+//            view.setInitStatus(bucketBuffer.isInitStatus());
+//            Bucket current = bucketBuffer.getCurrent();
+//            view.setIdle(current.getIdle());
+//
+//            // view.setCurrentValue(makeTrueId(0,current.getValue().get()));
+//            view.setCurrentValue(current.getValue().get());
+//            view.setCurrentInsideValue(current.getValue().get());
+//            view.setMax(current.getMax());
+//            view.setInside(current.getInside());
+//            res.put(key, view);
+//        }
         return res;
     }
 
     @Override
-    protected Result nullStrategy(String key) {
-        HeadwatersPo po = hwMarkDao.updateAndGetHeadwaters(key);
+    protected Result nullStrategy(String key) throws HedisException {
+        HeadwatersPo po = hwMarkDao.updateAndGetHeadwaters(0,key);
         insterCache(po);//updateCache();
         return super.getId(key);
     }

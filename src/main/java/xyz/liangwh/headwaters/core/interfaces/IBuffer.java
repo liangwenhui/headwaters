@@ -26,7 +26,7 @@ public abstract class IBuffer <T extends IBucket>{
     protected volatile int step;
     protected volatile int autoStep;
     protected volatile long updateTs=0;
-
+    protected volatile long max;
     public abstract T getCurrent();
     public abstract int getNextIndex();
     public abstract void checkoutCurrent();

@@ -1,5 +1,6 @@
 package xyz.liangwh.headwaters.core;
 
+import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -98,8 +99,20 @@ public abstract class AbstractHeadwaters<T extends IBuffer, Y extends IBucket> i
         this.initStatus = true;
         // 定时更新 集群方式才需要
         //updateRegularly();
+        createDataDir();
     }
 
+    private void createDataDir(){
+        File dir = new File("./dats");
+        if(!dir.exists()||!dir.isDirectory()){
+            dir.mkdirs();
+        }
+        File[] files = dir.listFiles();
+        for(File f:files){
+            f.delete();
+        }
+
+    }
     /**
      * 定时更新任务设置
      */
@@ -149,7 +162,13 @@ public abstract class AbstractHeadwaters<T extends IBuffer, Y extends IBucket> i
         else {
             synchronized (olock) {
                 if (!cache.containsKey(key)) {
-                    return nullStrategy(key);
+                    Result result = null;
+                    try {
+                        result = nullStrategy(key);
+                    } catch (HedisException e) {
+                        log.error("init BucketBuffer nullStrategy faild,key = {}", key, e);
+                    }
+                    return result;
                 }
                 else {
                     return getId(key);
@@ -159,7 +178,7 @@ public abstract class AbstractHeadwaters<T extends IBuffer, Y extends IBucket> i
 
     }
 
-    protected Result nullStrategy(String key) {
+    protected Result nullStrategy(String key) throws HedisException {
         return new Result(EXCEPTION_ID_KEY_NOT_EXISTS, null);
     }
 

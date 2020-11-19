@@ -32,12 +32,13 @@ spring:
         max-wait: -1
         max-idle: 8
         min-idle: 1
+    timeout: 300
 
 
 
 gid:
   key: 0027015537_hw
-  step: 600000
+  step: 10
 
 netty:
   port: 8080

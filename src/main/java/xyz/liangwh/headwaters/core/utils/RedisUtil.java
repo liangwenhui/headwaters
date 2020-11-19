@@ -133,7 +133,7 @@ public class RedisUtil {
      * @param by 要增加几(大于0)
      * @return
      */
-    public long hincr(String key, String item,int by){
+    public long hincr(String key, String item,long by){
 
         return redisTemplate.opsForHash().increment(key, item, by);
     }
